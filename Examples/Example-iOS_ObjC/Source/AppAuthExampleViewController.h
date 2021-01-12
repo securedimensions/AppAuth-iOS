@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nullable) IBOutlet UIButton *codeExchangeButton;
 @property(nullable) IBOutlet UIButton *userinfoButton;
 @property(nullable) IBOutlet UIButton *clearAuthStateButton;
+@property(nullable) IBOutlet UIButton *logoutButton;
 @property(nullable) IBOutlet UITextView *logTextView;
 
 /*! @brief The authorization state. This is the AppAuth object that you should keep around and
@@ -63,6 +64,11 @@ NS_ASSUME_NONNULL_BEGIN
     @param sender IBAction sender.
  */
 - (IBAction)clearAuthState:(nullable id)sender;
+
+/*! @brief Nils the @c OIDAuthState object and does logout from Authorization Server.
+    @param sender IBAction sender.
+ */
+- (IBAction)logout:(nullable id)sender;
 
 /*! @brief Clears the UI log.
     @param sender IBAction sender.

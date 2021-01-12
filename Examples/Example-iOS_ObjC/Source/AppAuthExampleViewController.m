@@ -28,20 +28,20 @@ typedef void (^PostRegistrationCallback)(OIDServiceConfiguration *configuration,
 
 /*! @brief The OIDC issuer from which the configuration will be discovered.
  */
-static NSString *const kIssuer = @"https://issuer.example.com";
+static NSString *const kIssuer = @"https://www.authenix.eu";
 
 /*! @brief The OAuth client ID.
     @discussion For client configuration instructions, see the README.
         Set to nil to use dynamic registration with this example.
     @see https://github.com/openid/AppAuth-iOS/blob/master/Examples/Example-iOS_ObjC/README.md
  */
-static NSString *const kClientID = @"YOUR_CLIENT_ID";
+static NSString *const kClientID = @"ecd8e3e3-b266-3740-1475-87ae758f4d6a";
 
 /*! @brief The OAuth redirect URI for the client @c kClientID.
     @discussion For client configuration instructions, see the README.
     @see https://github.com/openid/AppAuth-iOS/blob/master/Examples/Example-iOS_ObjC/README.md
  */
-static NSString *const kRedirectURI = @"com.example.app:/oauth2redirect/example-provider";
+static NSString *const kRedirectURI = @"net.openid.appauthdemo:/oauth2redirect";
 
 /*! @brief NSCoding key for the authState property.
  */
@@ -71,15 +71,15 @@ static NSString *const kAppAuthExampleAuthStateKey = @"authState";
   // The example needs to be configured with your own client details.
   // See: https://github.com/openid/AppAuth-iOS/blob/master/Examples/Example-iOS_ObjC/README.md
 
-  NSAssert(![kIssuer isEqualToString:@"https://issuer.example.com"],
+  NSAssert([kIssuer isEqualToString:@"https://www.authenix.eu"],
            @"Update kIssuer with your own issuer. "
             "Instructions: https://github.com/openid/AppAuth-iOS/blob/master/Examples/Example-iOS_ObjC/README.md");
 
-  NSAssert(![kClientID isEqualToString:@"YOUR_CLIENT_ID"],
+  NSAssert([kClientID isEqualToString:@"ecd8e3e3-b266-3740-1475-87ae758f4d6a"],
            @"Update kClientID with your own client ID. "
             "Instructions: https://github.com/openid/AppAuth-iOS/blob/master/Examples/Example-iOS_ObjC/README.md");
 
-  NSAssert(![kRedirectURI isEqualToString:@"com.example.app:/oauth2redirect/example-provider"],
+  NSAssert([kRedirectURI isEqualToString:@"net.openid.appauthdemo:/oauth2redirect"],
            @"Update kRedirectURI with your own redirect URI. "
             "Instructions: https://github.com/openid/AppAuth-iOS/blob/master/Examples/Example-iOS_ObjC/README.md");
 
@@ -92,7 +92,7 @@ static NSString *const kAppAuthExampleAuthStateKey = @"authState";
   NSAssert([urlSchemes count] > 0, @"No custom URI scheme has been configured for the project.");
   NSString *urlScheme = [urlSchemes objectAtIndex:0];
 
-  NSAssert(![urlScheme isEqualToString:@"com.example.app"],
+  NSAssert(![urlScheme isEqualToString:@"net.openid.appauthdemo"],
            @"Configure the URI scheme in Info.plist (URL Types -> Item 0 -> URL Schemes -> Item 0) "
             "with the scheme of your redirect URI. Full instructions: "
             "https://github.com/openid/AppAuth-iOS/blob/master/Examples/Example-iOS_ObjC/README.md");
@@ -104,7 +104,7 @@ static NSString *const kAppAuthExampleAuthStateKey = @"authState";
  */
 - (void)saveState {
   // for production usage consider using the OS Keychain instead
-  NSUserDefaults* userDefaults = [[NSUserDefaults alloc] initWithSuiteName:@"group.net.openid.appauth.Example"];
+  NSUserDefaults* userDefaults = [[NSUserDefaults alloc] initWithSuiteName:@"group.de.andreasmatheus.appauth.Example"];
   NSData *archivedAuthState = [NSKeyedArchiver archivedDataWithRootObject:_authState];
   [userDefaults setObject:archivedAuthState
                    forKey:kAppAuthExampleAuthStateKey];
@@ -115,7 +115,7 @@ static NSString *const kAppAuthExampleAuthStateKey = @"authState";
  */
 - (void)loadState {
   // loads OIDAuthState from NSUSerDefaults
-  NSUserDefaults* userDefaults = [[NSUserDefaults alloc] initWithSuiteName:@"group.net.openid.appauth.Example"];
+  NSUserDefaults* userDefaults = [[NSUserDefaults alloc] initWithSuiteName:@"group.de.andreasmatheus.appauth.Example"];
   NSData *archivedAuthState = [userDefaults objectForKey:kAppAuthExampleAuthStateKey];
   OIDAuthState *authState = [NSKeyedUnarchiver unarchiveObjectWithData:archivedAuthState];
   [self setAuthState:authState];
@@ -135,6 +135,7 @@ static NSString *const kAppAuthExampleAuthStateKey = @"authState";
 - (void)updateUI {
   _userinfoButton.enabled = [_authState isAuthorized];
   _clearAuthStateButton.enabled = _authState != nil;
+  _logoutButton.enabled = _authState != nil;
   _codeExchangeButton.enabled = _authState.lastAuthorizationResponse.authorizationCode
                                 && !_authState.lastTokenResponse;
   // dynamically changes authorize button text depending on authorized state
@@ -205,7 +206,7 @@ static NSString *const kAppAuthExampleAuthStateKey = @"authState";
       [[OIDAuthorizationRequest alloc] initWithConfiguration:configuration
                                                     clientId:clientID
                                                 clientSecret:clientSecret
-                                                      scopes:@[ OIDScopeOpenID, OIDScopeProfile ]
+                                                      scopes:@[ OIDScopeOpenID, OIDScopeProfile, @"offline_access" ]
                                                  redirectURL:redirectURI
                                                 responseType:OIDResponseTypeCode
                                         additionalParameters:nil];
@@ -448,6 +449,10 @@ static NSString *const kAppAuthExampleAuthStateKey = @"authState";
   }];
 }
 
+- (IBAction)logout:(id)sender {
+    [self logMessage:@"Logout"];
+}
+
 /*! @brief Logs a message to stdout and the textfield.
     @param format The format string and arguments.
  */
@@ -472,4 +477,6 @@ static NSString *const kAppAuthExampleAuthStateKey = @"authState";
                                                  log];
 }
 
+- (IBAction)logoutButton:(id)sender {
+}
 @end
