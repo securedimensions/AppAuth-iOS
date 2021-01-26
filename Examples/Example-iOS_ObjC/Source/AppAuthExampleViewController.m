@@ -35,7 +35,7 @@ static NSString *const kIssuer = @"https://www.authenix.eu";
         Set to nil to use dynamic registration with this example.
     @see https://github.com/openid/AppAuth-iOS/blob/master/Examples/Example-iOS_ObjC/README.md
  */
-static NSString *const kClientID = @"1bd2d528-b75f-3d69-49ca-5ac35e695eff";
+static NSString *const kClientID = @"0a6a3ef3-f038-3e96-749c-8357c147da41";
 
 /*! @brief The OAuth redirect URI for the client @c kClientID.
     @discussion For client configuration instructions, see the README.
