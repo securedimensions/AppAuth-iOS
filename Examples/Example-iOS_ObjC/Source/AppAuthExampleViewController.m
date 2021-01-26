@@ -35,7 +35,7 @@ static NSString *const kIssuer = @"https://www.authenix.eu";
         Set to nil to use dynamic registration with this example.
     @see https://github.com/openid/AppAuth-iOS/blob/master/Examples/Example-iOS_ObjC/README.md
  */
-static NSString *const kClientID = @"ecd8e3e3-b266-3740-1475-87ae758f4d6a";
+static NSString *const kClientID = @"1bd2d528-b75f-3d69-49ca-5ac35e695eff";
 
 /*! @brief The OAuth redirect URI for the client @c kClientID.
     @discussion For client configuration instructions, see the README.
@@ -70,7 +70,7 @@ static NSString *const kAppAuthExampleAuthStateKey = @"authState";
 
   // The example needs to be configured with your own client details.
   // See: https://github.com/openid/AppAuth-iOS/blob/master/Examples/Example-iOS_ObjC/README.md
-
+/*
   NSAssert([kIssuer isEqualToString:@"https://www.authenix.eu"],
            @"Update kIssuer with your own issuer. "
             "Instructions: https://github.com/openid/AppAuth-iOS/blob/master/Examples/Example-iOS_ObjC/README.md");
@@ -96,7 +96,7 @@ static NSString *const kAppAuthExampleAuthStateKey = @"authState";
            @"Configure the URI scheme in Info.plist (URL Types -> Item 0 -> URL Schemes -> Item 0) "
             "with the scheme of your redirect URI. Full instructions: "
             "https://github.com/openid/AppAuth-iOS/blob/master/Examples/Example-iOS_ObjC/README.md");
-
+*/
 #endif // !defined(NS_BLOCK_ASSERTIONS)
 }
 
@@ -208,7 +208,7 @@ static NSString *const kAppAuthExampleAuthStateKey = @"authState";
                                                 clientSecret:clientSecret
                                                       scopes:@[ OIDScopeOpenID, OIDScopeProfile, @"offline_access" ]
                                                  redirectURL:redirectURI
-                                                responseType:OIDResponseTypeCode
+                                                responseType:[NSString stringWithFormat: @"%@ %@", OIDResponseTypeCode, OIDResponseTypeIDToken]
                                         additionalParameters:nil];
   // performs authentication request
   AppDelegate *appDelegate = (AppDelegate *) [UIApplication sharedApplication].delegate;
@@ -239,9 +239,9 @@ static NSString *const kAppAuthExampleAuthStateKey = @"authState";
       [[OIDAuthorizationRequest alloc] initWithConfiguration:configuration
                                                     clientId:clientID
                                                 clientSecret:clientSecret
-                                                      scopes:@[ OIDScopeOpenID, OIDScopeProfile ]
+                                                      scopes:@[ OIDScopeOpenID, OIDScopeProfile, @"offline_access" ]
                                                  redirectURL:redirectURI
-                                                responseType:OIDResponseTypeCode
+                                                responseType:[NSString stringWithFormat: @"%@ %@", OIDResponseTypeCode, OIDResponseTypeIDToken]
                                         additionalParameters:nil];
   // performs authentication request
   AppDelegate *appDelegate = (AppDelegate *) [UIApplication sharedApplication].delegate;
@@ -451,6 +451,34 @@ static NSString *const kAppAuthExampleAuthStateKey = @"authState";
 
 - (IBAction)logout:(id)sender {
     [self logMessage:@"Logout"];
+    
+    // builds end session request
+    OIDEndSessionRequest *request =
+        [[OIDEndSessionRequest alloc] initWithConfiguration:_authState.lastAuthorizationResponse.request.configuration
+                                                idTokenHint:_authState.lastAuthorizationResponse.idToken
+                                      postLogoutRedirectURL:[NSURL URLWithString:@"net.openid.appauthdemo:/oauth2redirect"]
+                                                      state:@"ABC"
+                                       additionalParameters:nil];
+    
+    // performs end session request
+    AppDelegate *appDelegate = (AppDelegate *) [UIApplication sharedApplication].delegate;
+    [self logMessage:@"Initiating end session request with request: %@", request];
+
+    OIDExternalUserAgentIOS *userAgent = [[OIDExternalUserAgentIOS alloc] initWithPresentingViewController: self];
+    appDelegate.currentAuthorizationFlow =
+        [OIDAuthorizationService
+            presentEndSessionRequest:request
+            externalUserAgent:userAgent
+                            callback:^(OIDEndSessionResponse *_Nullable endSessionResponse, NSError *_Nullable error) {
+                              if (endSessionResponse) {
+                                [self setAuthState:nil];
+                                [self logMessage:@"End Session response with state: %@", endSessionResponse.state];
+                              } else {
+                                [self logMessage:@"End Session error: %@", [error localizedDescription]];
+                              }
+                            }
+         ];
+
 }
 
 /*! @brief Logs a message to stdout and the textfield.
